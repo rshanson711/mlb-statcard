@@ -9,14 +9,7 @@ export default function PlayerSearchNew(props) {
     const [battingHand, setBattingHand] = useState(null);
     const [throwingHand, setThrowingHand] = useState(null);
 
-    function bornInUSA() {
-        return (playerData.birth_country === "USA");
-    }
-
-    function hasCollege() {
-        return (playerData.college != "");
-    }
-
+    
     useEffect(() => {
         fetch("http://lookup-service-prod.mlb.com/json/named.search_player_all.bam?sport_code='mlb'&active_sw='Y'&name_part='" + props.name + "%25'")
             .then(response => response.json())
@@ -28,11 +21,18 @@ export default function PlayerSearchNew(props) {
                 }
             });
 
-        //fetch("http://lookup-service-prod.mlb.com/json/named.search_player_all.bam?sport_code='mlb'&active_sw='Y'&name_part='judge%25'")
         //get player image 
     }, [props.name]);
 
     useEffect(() => {
+        function bornInUSA() {
+            return (playerData.birth_country === "USA");
+        }
+    
+        function hasCollege() {
+            return (playerData.college !== "");
+        }
+    
         if (playerData) {
             setName(playerData.name_use + " " + playerData.name_last);
 
@@ -59,14 +59,13 @@ export default function PlayerSearchNew(props) {
         }
     }, [playerData]);
 
-    console.log("Line 31: playerData === " + playerData);
     return (
         <div className='playerContainer'>
-            <h1>{name}</h1>
-            <p>Position: {position}</p>
-            <p>Bats: {battingHand} Throws: {throwingHand}</p>
-            <p>Birthplace: {origin}</p>
-            <p>College: {college}</p>
+            <h1 className='playerName'>{name}</h1>
+            <p className='playerPos'>Position: {position}</p>
+            <p className='playerBatsThrows'>Bats: {battingHand} Throws: {throwingHand}</p>
+            <p className='playerBirthplace'>Birthplace: {origin}</p>
+            <p className='playerCollege'>College: {college}</p>
         </div>
     )
 }
