@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
-import PlayerSearch from './components/PlayerSearch';
-import PlayerSearchNew from './components/PlayerSearchNew';
+import PlayerSearchNew from './components/PlayerSearch';
 
 class App extends Component {
   constructor(props) {

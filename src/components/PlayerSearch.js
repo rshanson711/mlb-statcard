@@ -1,95 +1,72 @@
-import React, {Component} from 'react';
+import React, {useEffect, useState} from 'react';
 
-class PlayerSearch extends Component {
-    constructor(props) {
-        super(props);
+export default function PlayerSearchNew(props) {
+    const [playerData, setPlayerData] = useState(null);
+    const [name, setName] = useState(null);
+    const [origin, setOrigin] = useState(null);
+    const [college, setCollege] = useState(null);
+    const [position, setPosition] = useState(null);
+    const [battingHand, setBattingHand] = useState(null);
+    const [throwingHand, setThrowingHand] = useState(null);
 
-        this.fetchPlayer = this.fetchPlayer.bind(this);
-
-        this.state = {
-            playerData: null,
-            playerImage: null,
-            firstName: null,
-            lastName: null,
-            originCity: null,
-            originState: null,
-            college: null
-        }
+    function bornInUSA() {
+        return (playerData.birth_country === "USA");
     }
 
-    async fetchPlayer(props) {
-        const {name} = props;
-        const data = await fetch("http://lookup-service-prod.mlb.com/json/named.search_player_all.bam?sport_code='mlb'&active_sw='Y'&name_part='" + name + "%25'");
-        //const data = await fetch("http://lookup-service-prod.mlb.com/json/named.search_player_all.bam?sport_code='mlb'&active_sw='Y'&name_part='judge%25'");
-        //get player image
+    function hasCollege() {
+        return (playerData.college != "");
+    }
 
-        //CONVERT DATA TO JSON
-        try {
-            this.setState({
-                playerData: await data.json()
+    useEffect(() => {
+        fetch("http://lookup-service-prod.mlb.com/json/named.search_player_all.bam?sport_code='mlb'&active_sw='Y'&name_part='" + props.name + "%25'")
+            .then(response => response.json())
+            .then(data => {
+                if (data.search_player_all.queryResults.totalSize === "1") {
+                    setPlayerData(data.search_player_all.queryResults.row);
+                } else {
+                    setPlayerData(data.search_player_all.queryResults.row[0]);
+                }
             });
-        } catch {
-            console.log("Failed to read var: playerData");
-        }
-        
-        //INITIALIZE STATES
-        try {
-            if (this.state.playerData.search_player_all.queryResults.totalSize === "1") {
-               this.setState({
-                    //playerImage: playerImgLink
-                    firstName: this.state.playerData.search_player_all.queryResults.row.name_use,
-                    lastName: this.state.playerData.search_player_all.queryResults.row.name_last,
-                    originCity: this.state.playerData.search_player_all.queryResults.row.birth_city,
-                    college: this.state.playerData.search_player_all.queryResults.row.college
-                }); 
 
-                if (this.state.playerData.search_player_all.queryResults.row.birth_country === "USA") {
-                    this.setState({
-                        originState: this.state.playerData.search_player_all.queryResults.row.birth_state
-                    });
-                } else {
-                    this.setState({
-                        originState: this.state.playerData.search_player_all.queryResults.row.birth_country
-                    });
-                }
+        //fetch("http://lookup-service-prod.mlb.com/json/named.search_player_all.bam?sport_code='mlb'&active_sw='Y'&name_part='judge%25'")
+        //get player image 
+    }, [props.name]);
+
+    useEffect(() => {
+        if (playerData) {
+            setName(playerData.name_use + " " + playerData.name_last);
+
+            //INITIALIZE PLACE OF BIRTH
+            if (bornInUSA()) {
+                setOrigin(playerData.birth_city + ", " + playerData.birth_state);
             } else {
-                //INITIALIZE FIRST/LAST NAME, BIRTH CITY, COLLEGE
-                this.setState({
-                    //playerImage: playerImgLink
-                    firstName: this.state.playerData.search_player_all.queryResults.row[0].name_use,
-                    lastName: this.state.playerData.search_player_all.queryResults.row[0].name_last,
-                    originCity: this.state.playerData.search_player_all.queryResults.row[0].birth_city,
-                    college: this.state.playerData.search_player_all.queryResults.row[0].college
-                });
-
-                //INITIALIZE STATE (OR COUNTRY) OF BIRTH
-                if (this.state.playerData.search_player_all.queryResults.row[0].birth_country === "USA") {
-                    this.setState({
-                        originState: this.state.playerData.search_player_all.queryResults.row[0].birth_state
-                    });
-                } else {
-                    this.setState({
-                        originState: this.state.playerData.search_player_all.queryResults.row[0].birth_country
-                    });
-                }
+                setOrigin(playerData.birth_city + ", " + playerData.birth_country);
             }
-            
-        } catch {
-            console.log("Failed to parse var: playerData");
+
+            //INITIALIZE PRIOR EDUCATION
+            if (hasCollege()) {
+                setCollege(playerData.college);
+            } else {
+                setCollege(playerData.high_school);
+            }
+
+            //INITIALIZE POSITION
+            setPosition(playerData.position);
+
+            //INITALIZE BATTING AND THROWING/PITCHING HAND
+            setBattingHand(playerData.bats);
+            setThrowingHand(playerData.throws)
         }
-    }
+    }, [playerData]);
 
-    render() {
-        this.fetchPlayer(this.props);
-        const {firstName, lastName, originCity, originState, college} = this.state;
-        return (
-            <div className='playerContainer'>
-                <h1>{firstName} {lastName}</h1>
-                <p>Birthplace: {originCity}, {originState}</p>
-                <p>College: {college}</p>
-            </div>
-        )
-    }
+    console.log("Line 31: playerData === " + playerData);
+    return (
+        <div className='playerContainer'>
+            <h1>{name}</h1>
+            <p>Position: {position}</p>
+            <p>Bats: {battingHand} Throws: {throwingHand}</p>
+            <p>Birthplace: {origin}</p>
+            <p>College: {college}</p>
+        </div>
+    )
 }
-
-export default PlayerSearch;
