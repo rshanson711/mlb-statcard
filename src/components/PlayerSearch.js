@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import styled from 'styled-components';
 
 export default function PlayerSearchNew(props) {
     const [playerData, setPlayerData] = useState(null);
@@ -9,7 +10,14 @@ export default function PlayerSearchNew(props) {
     const [battingHand, setBattingHand] = useState(null);
     const [throwingHand, setThrowingHand] = useState(null);
 
-    
+    const PlayerCard = styled.div`
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(4, 1fr);
+
+        width: 66%;
+    `
+
     useEffect(() => {
         fetch("http://lookup-service-prod.mlb.com/json/named.search_player_all.bam?sport_code='mlb'&active_sw='Y'&name_part='" + props.name + "%25'")
             .then(response => response.json())
@@ -60,12 +68,12 @@ export default function PlayerSearchNew(props) {
     }, [playerData]);
 
     return (
-        <div className='playerContainer'>
+        <PlayerCard className='playerContainer'>
             <h1 className='playerName'>{name}</h1>
             <p className='playerPos'>Position: {position}</p>
             <p className='playerBatsThrows'>Bats: {battingHand} Throws: {throwingHand}</p>
             <p className='playerBirthplace'>Birthplace: {origin}</p>
             <p className='playerCollege'>College: {college}</p>
-        </div>
+        </PlayerCard>
     )
 }
